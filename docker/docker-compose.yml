@@ -1,0 +1,30 @@
+services:
+  web:
+    build: ./web
+    image: web-laravel
+    container_name: web-pp
+    ports:
+      - "8000:80"
+    volumes:
+      - ../.:/var/www/html
+    environment:
+      XDEBUG_MODE: debug
+      XDEBUG_CLIENT_HOST: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  mysql:
+    build: ./mysql
+    image: mysql-8
+    container_name: mysql-pp
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pp
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+  redis:
+    image: redis:7
+    container_name: redis-pp
+    ports:
+      - "6379:6379"
