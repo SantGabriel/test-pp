@@ -24,7 +24,7 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
             'cpf_cnpj' => fake()->boolean() ? fake()->regexify('[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}') : fake()->regexify('[0-9]{2}\.[0-9]{3}\.[0-9]{3}\/[0-9]{4}-[0-9]{2}'),
-            'balance' => 0.0,
+            'balance' => 1000.0,
             'type' => $this->faker->randomElement(UserType::cases()),
         ];
     }

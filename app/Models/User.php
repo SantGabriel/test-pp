@@ -31,6 +31,6 @@ class User extends Model
     ];
 
     protected $casts = [
-        'balance' => 'float',
+        'type' => UserType::class,
     ];
 }

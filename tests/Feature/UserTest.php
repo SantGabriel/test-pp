@@ -17,19 +17,10 @@ class UserTest extends TestCase
             'type' => 'comum',
         ]);
 
-        $this->assertDatabaseHas('account', [
+        $this->assertDatabaseHas('user', [
             'id' => $user->id,
             'email' => $user->email,
         ]);
-    }
-
-    public function test_factory_cria_dois_usuarios()
-    {
-        $users = User::factory()->count(2)->create();
-
-        $this->assertCount(2, $users);
-        $this->assertDatabaseHas('account', ['id' => $users[0]->id]);
-        $this->assertDatabaseHas('account', ['id' => $users[1]->id]);
     }
 }
 

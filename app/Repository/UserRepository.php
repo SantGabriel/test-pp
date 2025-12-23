@@ -7,8 +7,12 @@ use App\Models\User;
 class UserRepository
 {
 
-    public function getAccount(int $id): ?User
+    public function getAccount(int $id, bool $lock = false): ?User
     {
-        return User::find($id);
+        $query = User::where('id',$id);
+        if($lock) {
+            $query->lockForUpdate();
+        }
+        return $query->first();
     }
 }

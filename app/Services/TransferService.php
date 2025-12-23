@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Repository\Repository;
 use App\Enum\UserType;
+use App\Jobs\NotificationJob;
+use App\Models\User;
 use App\Repository\TransferRepository;
 use App\Repository\UserRepository;
 use Illuminate\Support\Facades\DB;
@@ -14,8 +15,7 @@ class TransferService
 {
 
     public function __construct(private TransferRepository $transferRepository,
-                                private UserRepository $userRepository,
-                                private NotificationService $notificationService)
+                                private UserRepository $userRepository)
     {
     }
 
@@ -38,21 +38,21 @@ class TransferService
         if ($userFrom->type != UserType::COMUM)
             throw new Exception('Payer is not allowed to send money', 422);
 
-        if($this->check())
+        if(!$this->check($userFrom))
             throw new Exception('Check failed', 422);
 
-        $success = $this->transferRepository->transfer($userFrom, $userToReceive, $value);
+        [$userFrom, $userToReceive] = $this->transferRepository->transfer($userFromId, $userToReceiveId, $value);
 
-        if(!$success) throw new Exception('Transfer failed', 422);
+        if(!isset($userFrom)) throw new Exception('Transfer failed', 422);
 
-        $this->notificationService->notificate($userToReceive->email, "Você recebeu R$ {$value} de {$userFrom->name}");
+        NotificationJob::dispatch($userToReceive->email, "Você recebeu R$ {$value} de {$userFrom->name}");
 
         return true;
     }
 
-    private function check(): bool
+    private function check(?User $userFrom): bool
     {
-        // consulta autorizador externo (GET)
+        if($userFrom->name == "Fail Checker") return false;
         $authRes = Http::timeout(5)->get('https://util.devi.tools/api/v2/authorize');
         if (!$authRes->successful()) {
             return false;
