@@ -30,12 +30,12 @@ class Transfer extends Model
         'value' => 'float',
     ];
 
-    public function userFrom(): HasOne
-    {
-        return $this->hasOne(User::class, 'id', 'userFrom');
-    }
-    public function userToReceive(): HasOne
-    {
-        return $this->hasOne(User::class, 'id', 'userToReceive');
-    }
+//    public function userFrom(): HasOne
+//    {
+//        return $this->hasOne(User::class, 'id', 'userFrom');
+//    }
+//    public function userToReceive(): HasOne
+//    {
+//        return $this->hasOne(User::class, 'id', 'userToReceive');
+//    }
 }

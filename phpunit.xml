@@ -19,6 +19,6 @@
     </source>
     <php>
         <!-- Forçar ambiente de teste e DB específico -->
-        <env name="APP_ENV" value="test"/>
+        <env name="APP_ENV" value="testing"/>
     </php>
 </phpunit>

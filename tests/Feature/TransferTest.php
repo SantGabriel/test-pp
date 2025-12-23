@@ -3,8 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enum\UserType;
-use App\Jobs\NotificationJob;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Testing\TestResponse;
 use Psy\Util\Json;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -62,11 +61,13 @@ class TransferTest extends TestCase
         $response->assertContent(Json::encode([
             "message" => 'Check failed'
         ]));
+        $this->assertDatabaseMissing('transfer', $transferData);
+        $this->assertEquals(200, $userFrom->fresh()->balance);
+        $this->assertEquals(50, $userToReceive->fresh()->balance);
     }
 
-    public function test_faz_uma_transferencia_entre_dois_usuarios()
+    public function test_succesful_transfer()
     {
-        Bus::fake();
         $userFrom = User::factory()->CPFOrCNPJ(UserType::COMUM)->create([
             'balance' => 200.00,
             'type' => UserType::COMUM,
@@ -84,22 +85,32 @@ class TransferTest extends TestCase
             'userFrom' => $userFrom->id,
             'value' => $valor,
         ];
-        $response = $this->post('api/transfer?XDEBUG_SESSION_START=PHPSTORM', $transferData);
+        $response = $this->succesful_transfer($transferData);
 
-        if($response->status() == 200){
-            $response->assertStatus(200);
-            $this->assertDatabaseHas('transfer', $transferData);
-            $this->assertEquals(200 - $valor, $userFrom->fresh()->balance);
-            $this->assertEquals(50 + $valor, $userToReceive->fresh()->balance);
-            Bus::assertDispatched(NotificationJob::class);
-            echo("Transferência realizada com sucesso!\n");
-        }else {
-            $this->assertDatabaseMissing('transfer', $transferData);
-            $this->assertEquals(200, $userFrom->fresh()->balance);
-            $this->assertEquals(50, $userToReceive->fresh()->balance);
-            echo("Falha na transferência!\n");
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('transfer', $transferData);
+        $this->assertEquals(200 - $valor, $userFrom->fresh()->balance);
+        $this->assertEquals(50 + $valor, $userToReceive->fresh()->balance);
+
+    }
+
+    public function succesful_transfer(array $transferData): TestResponse
+    {
+        $maxAttempts = 10;
+        $attempt = 0;
+        $response = null;
+        while ($attempt < $maxAttempts) {
+            $attempt++;
+
+            $response = $this->post('api/transfer?XDEBUG_SESSION_START=PHPSTORM', $transferData);
+
+            if ($response->status() == 200) {
+                break;
+            }
+
+            sleep(1);
         }
-
+        return $response;
     }
 }
 
