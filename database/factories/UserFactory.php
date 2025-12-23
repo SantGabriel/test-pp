@@ -18,6 +18,7 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $type = $this->faker->randomElement(UserType::cases());
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
@@ -26,5 +27,14 @@ class UserFactory extends Factory
             'balance' => 0.0,
             'type' => $this->faker->randomElement(UserType::cases()),
         ];
+    }
+
+    public function CPFOrCNPJ(UserType $userType): self
+    {
+        return $this->state(fn () => [
+            'cpf_cnpj' => $userType == UserType::COMUM
+                ? fake()->regexify('[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}')
+                : fake()->regexify('[0-9]{2}\.[0-9]{3}\.[0-9]{3}\/[0-9]{4}-[0-9]{2}'),
+        ]);
     }
 }
